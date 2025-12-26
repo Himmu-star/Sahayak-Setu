@@ -1,0 +1,752 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  Users, 
+  Briefcase, 
+  CheckCircle, 
+  ShieldCheck, 
+  MapPin, 
+  ArrowRight, 
+  Menu, 
+  X, 
+  Phone, 
+  Star, 
+  TrendingUp,
+  HardHat,
+  Zap,
+  Droplets,
+  Settings,
+  Home,
+  LogOut,
+  ChevronRight
+} from 'lucide-react';
+
+// --- Configuration & Constants ---
+const CATEGORIES = [
+  { id: 'construction', name: 'Construction', icon: HardHat, desc: 'Skilled masonry and labor' },
+  { id: 'electrician', name: 'Electrician', icon: Zap, desc: 'Wiring, repairs, and installs' },
+  { id: 'plumber', name: 'Plumber', icon: Droplets, desc: 'Pipe fitting and drainage' },
+  { id: 'technician', name: 'Technician', icon: Settings, desc: 'Appliance and device repair' },
+  { id: 'domestic', name: 'Domestic Help', icon: Home, desc: 'Cleaning and housekeeping' },
+  { id: 'labour', name: 'Daily Labour', icon: Users, desc: 'General versatile manpower' },
+];
+
+const STATS = [
+  { label: 'Verified Workers', value: '12,000+' },
+  { label: 'Jobs Completed', value: '45,000+' },
+  { label: 'Cities Covered', value: '18+' },
+  { label: 'Trust Rating', value: '4.9/5' },
+];
+
+// --- UI Components ---
+
+const Button = ({ children, onClick, variant = 'primary', className = '', disabled = false }) => {
+  const variants = {
+    primary: 'bg-blue-600 text-white hover:bg-blue-700 shadow-md',
+    secondary: 'bg-teal-500 text-white hover:bg-teal-600 shadow-md',
+    outline: 'border-2 border-blue-600 text-blue-600 hover:bg-blue-50',
+    ghost: 'text-gray-600 hover:bg-gray-100',
+    white: 'bg-white text-blue-600 hover:bg-gray-100',
+  };
+  return (
+    <button 
+      disabled={disabled}
+      onClick={onClick}
+      className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 ${variants[variant]} ${className}`}
+    >
+      {children}
+    </button>
+  );
+};
+
+const Card = ({ children, className = "" }) => (
+  <div className={`bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow ${className}`}>
+    {children}
+  </div>
+);
+
+// --- Main Application Component ---
+
+export default function App() {
+  const [role, setRole] = useState(null); // 'worker' or 'user'
+  const [view, setView] = useState('home'); // 'home', 'login', 'register', 'dashboard', 'browse'
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+
+  // Persistence check
+  useEffect(() => {
+    const savedRole = localStorage.getItem('sh-role');
+    const savedUser = localStorage.getItem('sh-user');
+    if (savedRole) setRole(savedRole);
+    if (savedUser) setUser(JSON.parse(savedUser));
+  }, []);
+
+  const handleRoleSelection = (selectedRole) => {
+    setRole(selectedRole);
+    localStorage.setItem('sh-role', selectedRole);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setRole(null);
+    setView('home');
+    localStorage.removeItem('sh-role');
+    localStorage.removeItem('sh-user');
+  };
+
+  // --- Views ---
+
+  const RoleSelectionModal = () => (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-blue-900/40 backdrop-blur-md p-4">
+      <div className="bg-white rounded-3xl p-8 max-w-4xl w-full shadow-2xl animate-in fade-in zoom-in duration-300">
+        <div className="text-center mb-10">
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-1 w-24 bg-blue-600 rounded-full mb-2"></div>
+          </div>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Welcome to Sahayak Setu</h1>
+          <p className="text-gray-600 text-lg">How would you like to use our platform today?</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <button 
+            onClick={() => handleRoleSelection('worker')}
+            className="group relative overflow-hidden bg-teal-50 hover:bg-teal-100 border-2 border-teal-200 p-8 rounded-2xl text-left transition-all hover:-translate-y-1"
+          >
+            <div className="bg-teal-500 text-white p-4 rounded-xl inline-block mb-6 group-hover:scale-110 transition-transform">
+              <Briefcase size={32} />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">I am a Worker</h2>
+            <p className="text-gray-600 mb-4">I want to find skilled work, get verified, and earn with dignity.</p>
+            <div className="flex items-center text-teal-600 font-bold gap-2">
+              Join as Professional <ArrowRight size={18} />
+            </div>
+          </button>
+
+          <button 
+            onClick={() => handleRoleSelection('user')}
+            className="group relative overflow-hidden bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 p-8 rounded-2xl text-left transition-all hover:-translate-y-1"
+          >
+            <div className="bg-blue-600 text-white p-4 rounded-xl inline-block mb-6 group-hover:scale-110 transition-transform">
+              <Users size={32} />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">I need a Worker</h2>
+            <p className="text-gray-600 mb-4">I want to find verified help for my home or business projects.</p>
+            <div className="flex items-center text-blue-600 font-bold gap-2">
+              Hire Professionals <ArrowRight size={18} />
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const Navbar = () => (
+    <nav className="bg-white border-b border-gray-100 sticky top-0 z-40">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-20 items-center">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setView('home')}>
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-lg">
+              <TrendingUp size={24} />
+            </div>
+            <span className="text-2xl font-bold tracking-tight text-gray-900">
+              Sahayak<span className="text-blue-600">Setu</span>
+            </span>
+          </div>
+
+          <div className="hidden md:flex items-center gap-8">
+            <button onClick={() => setView('home')} className="text-gray-600 hover:text-blue-600 font-medium">How it works</button>
+            <button onClick={() => setView('home')} className="text-gray-600 hover:text-blue-600 font-medium">Trust & Safety</button>
+            {user ? (
+              <div className="flex items-center gap-4">
+                <span className="text-gray-900 font-semibold">Hello, {user.name}</span>
+                <Button variant="outline" className="py-2 px-4 text-sm" onClick={handleLogout}>
+                  <LogOut size={16} /> Logout
+                </Button>
+              </div>
+            ) : (
+              <Button onClick={() => setView('login')} variant={role === 'worker' ? 'secondary' : 'primary'} className="py-2.5 px-6">
+                Login
+              </Button>
+            )}
+          </div>
+
+          <button className="md:hidden p-2 text-gray-600" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
+          </button>
+        </div>
+      </div>
+      {/* Mobile Menu */}
+      {isMenuOpen && (
+        <div className="md:hidden bg-white border-b border-gray-100 p-4 space-y-4 animate-in slide-in-from-top-4">
+          <button className="block w-full text-left py-2 text-gray-600 font-medium">How it works</button>
+          <button className="block w-full text-left py-2 text-gray-600 font-medium">Trust & Safety</button>
+          {!user && (
+            <Button className="w-full" onClick={() => setView('login')}>Login</Button>
+          )}
+          {user && (
+             <Button className="w-full" variant="outline" onClick={handleLogout}>Logout</Button>
+          )}
+        </div>
+      )}
+    </nav>
+  );
+
+  const Hero = () => (
+    <section className="relative overflow-hidden pt-16 pb-24 lg:pt-24 lg:pb-32">
+      <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-96 h-96 bg-blue-50 rounded-full blur-3xl opacity-50"></div>
+      <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-96 h-96 bg-teal-50 rounded-full blur-3xl opacity-50"></div>
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div className="max-w-3xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-sm font-bold mb-6">
+            <span className="flex h-2 w-2 rounded-full bg-blue-600 animate-pulse"></span>
+            Transforming the informal economy
+          </div>
+          <h1 className="text-5xl md:text-7xl font-extrabold text-gray-900 leading-[1.1] mb-8">
+            Bridging Workers & Work Through <span className="text-blue-600 underline decoration-blue-200 decoration-8 underline-offset-4">Technology.</span>
+          </h1>
+          <p className="text-xl text-gray-600 mb-10 leading-relaxed max-w-2xl">
+            A trusted digital platform connecting skilled workers with people who need reliable help — with dignity, safety, and transparency.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4">
+            {role === 'worker' ? (
+              <Button onClick={() => setView('login')} variant="secondary" className="text-lg px-10 py-4 h-16">
+                Register as a Worker <ArrowRight size={20} />
+              </Button>
+            ) : (
+              <Button onClick={() => setView('browse')} variant="primary" className="text-lg px-10 py-4 h-16">
+                Find a Worker <ArrowRight size={20} />
+              </Button>
+            )}
+            <Button variant="ghost" className="text-lg px-10 py-4 h-16">
+              Learn More
+            </Button>
+          </div>
+          
+          <div className="mt-12 flex items-center gap-6">
+             <div className="flex -space-x-3">
+               {[1,2,3,4].map(i => (
+                 <div key={i} className="w-12 h-12 rounded-full border-2 border-white bg-gray-200 overflow-hidden">
+                   <img src={`https://i.pravatar.cc/150?u=${i + 10}`} alt="User" />
+                 </div>
+               ))}
+               <div className="w-12 h-12 rounded-full border-2 border-white bg-blue-600 flex items-center justify-center text-white text-xs font-bold">
+                 +10k
+               </div>
+             </div>
+             <div className="text-sm">
+               <div className="flex text-yellow-400 gap-0.5 mb-1">
+                 {[1,2,3,4,5].map(i => <Star key={i} size={14} fill="currentColor" />)}
+               </div>
+               <p className="text-gray-500">Trusted by over <span className="font-bold text-gray-900">10,000+</span> households</p>
+             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+
+  const StepSection = () => (
+    <section className="py-24 bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">How it works</h2>
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto">Getting started is simple, whether you are looking for work or looking for help.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 relative">
+          {(role === 'worker' ? [
+            { title: 'Register', text: 'Sign up with your phone number' },
+            { title: 'Add Skills', text: 'Select your expertise and work location' },
+            { title: 'Get Verified', text: 'Complete our background safety check' },
+            { title: 'Get Work', text: 'Receive invitations for nearby jobs' },
+            { title: 'Earn Dignity', text: 'Build your profile with ratings and earnings' }
+          ] : [
+            { title: 'Choose Service', text: 'Pick a category of work you need' },
+            { title: 'Find Near Me', text: 'See verified workers in your local area' },
+            { title: 'Invite', text: 'Schedule and coordinate through the app' },
+            { title: 'Safe Work', text: 'Professional service at your doorstep' },
+            { title: 'Complete', text: 'Secure payment and provide feedback' }
+          ]).map((step, idx) => (
+            <div key={idx} className="flex flex-col items-center text-center p-6">
+              <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-lg mb-6 shadow-lg shadow-blue-200">
+                {idx + 1}
+              </div>
+              <h3 className="font-bold text-gray-900 mb-2">{step.title}</h3>
+              <p className="text-sm text-gray-500">{step.text}</p>
+            </div>
+          ))}
+          {/* Connector Line (Desktop) */}
+          <div className="hidden md:block absolute top-12 left-[10%] right-[10%] h-[2px] bg-blue-100 -z-0"></div>
+        </div>
+      </div>
+    </section>
+  );
+
+  const CategoriesGrid = () => (
+    <section className="py-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+          <div>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Worker Categories</h2>
+            <p className="text-gray-600 text-lg">Browse our wide network of skilled professionals across domains.</p>
+          </div>
+          <Button variant="outline">View All Categories</Button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {CATEGORIES.map((cat) => (
+            <Card key={cat.id} className="p-8 group cursor-pointer border-transparent hover:border-blue-100">
+              <div className="bg-gray-50 group-hover:bg-blue-600 group-hover:text-white transition-colors w-14 h-14 rounded-xl flex items-center justify-center text-blue-600 mb-6">
+                <cat.icon size={28} />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">{cat.name}</h3>
+              <p className="text-gray-500 mb-6">{cat.desc}</p>
+              <button 
+                onClick={() => setView('browse')}
+                className="flex items-center gap-2 text-blue-600 font-bold group-hover:translate-x-2 transition-transform"
+              >
+                Find Worker <ArrowRight size={18} />
+              </button>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+
+  const TrustSection = () => (
+    <section className="py-24 bg-blue-900 text-white rounded-[3rem] mx-4 my-8 overflow-hidden relative">
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
+      </div>
+      <div className="max-w-7xl mx-auto px-8 relative">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-8">Trust & Safety is Our <span className="text-blue-400">Foundation.</span></h2>
+            <div className="space-y-6">
+              {[
+                { icon: ShieldCheck, title: 'Verified Profiles', text: 'Every worker on our platform undergoes a multi-stage phone and ID verification process.' },
+                { icon: CheckCircle, title: 'Identity Transparency', text: 'Real names, clear photos, and direct references for every registered professional.' },
+                { icon: Users, title: 'Respect Policy', text: 'Strict guidelines to ensure mutual respect, dignity, and fair treatment for all.' }
+              ].map((item, i) => (
+                <div key={i} className="flex gap-6">
+                  <div className="flex-shrink-0 w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center text-blue-400">
+                    <item.icon size={24} />
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-bold mb-1">{item.title}</h4>
+                    <p className="text-blue-100/70">{item.text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="bg-white/5 backdrop-blur-sm p-8 rounded-3xl border border-white/10">
+            <h3 className="text-2xl font-bold mb-6">Impact at a Glance</h3>
+            <div className="grid grid-cols-2 gap-8">
+              {STATS.map((stat, i) => (
+                <div key={i}>
+                  <p className="text-3xl md:text-4xl font-extrabold mb-1">{stat.value}</p>
+                  <p className="text-blue-200 text-sm font-medium uppercase tracking-wider">{stat.label}</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-10 p-6 bg-blue-800/50 rounded-2xl">
+              <p className="italic text-blue-100">
+                "Sahayak Setu isn't just an app; it's a bridge to formal identity for millions who have been working in the shadows."
+              </p>
+              <div className="mt-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-blue-400/20"></div>
+                <div>
+                  <p className="font-bold">Team Sahayak</p>
+                  <p className="text-xs text-blue-300">Founding Vision</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+
+  const SubscriptionSection = () => (
+    <section className="py-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-bold text-gray-900 mb-4">Simple, Fair Plans</h2>
+          <p className="text-gray-600 text-lg">Choose a plan that fits your needs. No hidden fees.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          {/* User Plan */}
+          <Card className="p-10 flex flex-col border-blue-100 bg-gradient-to-br from-white to-blue-50/30">
+            <div className="mb-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">For Families & Users</h3>
+              <p className="text-gray-500">Premium access to the best talent.</p>
+            </div>
+            <div className="mb-8">
+              <span className="text-5xl font-extrabold text-gray-900">₹499</span>
+              <span className="text-gray-500">/year</span>
+            </div>
+            <ul className="space-y-4 mb-10 flex-grow">
+              {['Unlimited worker contacts', 'Priority support access', 'Verified profile viewing', 'Scheduling tools'].map(f => (
+                <li key={f} className="flex items-center gap-3 text-gray-700">
+                  <CheckCircle size={18} className="text-blue-600" /> {f}
+                </li>
+              ))}
+            </ul>
+            <Button className="w-full">Get Started</Button>
+          </Card>
+
+          {/* Worker Plan */}
+          <Card className="p-10 flex flex-col border-teal-100 bg-gradient-to-br from-white to-teal-50/30">
+            <div className="mb-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">For Workers</h3>
+              <p className="text-gray-500">Your digital identity starts here.</p>
+            </div>
+            <div className="mb-8">
+              <span className="text-5xl font-extrabold text-gray-900">FREE</span>
+            </div>
+            <ul className="space-y-4 mb-10 flex-grow">
+              {['Digital identity profile', 'Skills & Location listing', 'Phone verification badge', 'Direct work invitations'].map(f => (
+                <li key={f} className="flex items-center gap-3 text-gray-700">
+                  <CheckCircle size={18} className="text-teal-500" /> {f}
+                </li>
+              ))}
+            </ul>
+            <Button variant="secondary" className="w-full" onClick={() => setView('login')}>Join as Worker</Button>
+          </Card>
+        </div>
+      </div>
+    </section>
+  );
+
+  const LoginView = () => {
+    const [step, setStep] = useState(1); // 1: Phone, 2: OTP, 3: Success
+    const [phone, setPhone] = useState("");
+    const [otp, setOtp] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleSendOtp = () => {
+      if (phone.length < 10) return;
+      setIsLoading(true);
+      setTimeout(() => {
+        setIsLoading(false);
+        setStep(2);
+      }, 1000);
+    };
+
+    const handleVerifyOtp = () => {
+      if (otp.length < 4) return;
+      setIsLoading(true);
+      setTimeout(() => {
+        setIsLoading(false);
+        const userData = {
+          name: role === 'worker' ? 'Suresh Kumar' : 'Arjun Singh',
+          id: Math.random().toString(36).substr(2, 9),
+          role: role
+        };
+        setUser(userData);
+        localStorage.setItem('sh-user', JSON.stringify(userData));
+        setStep(3);
+        setTimeout(() => setView('home'), 1500);
+      }, 1000);
+    };
+
+    return (
+      <div className="max-w-md mx-auto py-24 px-4">
+        <Card className="p-10 shadow-xl border-gray-100">
+          <div className="text-center mb-10">
+            <div className={`w-16 h-16 mx-auto rounded-2xl flex items-center justify-center text-white mb-6 ${role === 'worker' ? 'bg-teal-500' : 'bg-blue-600'}`}>
+              <Phone size={32} />
+            </div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              {step === 1 ? 'Verify Phone' : step === 2 ? 'Enter OTP' : 'Success!'}
+            </h2>
+            <p className="text-gray-500">
+              {step === 1 ? 'Start with your mobile number' : step === 2 ? `Enter the code sent to ${phone}` : 'Verification complete'}
+            </p>
+          </div>
+
+          {step === 1 && (
+            <div className="space-y-6">
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold border-r border-gray-200 pr-3">+91</span>
+                <input 
+                  type="tel" 
+                  placeholder="00000 00000"
+                  className="w-full pl-16 pr-4 py-4 rounded-xl border-2 border-gray-100 focus:border-blue-600 outline-none text-lg tracking-widest font-bold"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                />
+              </div>
+              <Button 
+                className="w-full py-4 text-lg" 
+                variant={role === 'worker' ? 'secondary' : 'primary'}
+                onClick={handleSendOtp}
+                disabled={phone.length < 10 || isLoading}
+              >
+                {isLoading ? 'Processing...' : 'Send Verification Code'}
+              </Button>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="space-y-6">
+              <div className="flex justify-between gap-4">
+                {[1, 2, 3, 4].map(i => (
+                  <input 
+                    key={i}
+                    type="text" 
+                    maxLength="1"
+                    className="w-full h-16 text-center text-2xl font-bold rounded-xl border-2 border-gray-100 focus:border-blue-600 outline-none"
+                    onChange={(e) => {
+                      if (e.target.value) setOtp(prev => (prev + e.target.value).slice(0, 4));
+                    }}
+                  />
+                ))}
+              </div>
+              <Button 
+                className="w-full py-4 text-lg" 
+                variant={role === 'worker' ? 'secondary' : 'primary'}
+                onClick={handleVerifyOtp}
+                disabled={otp.length < 4 || isLoading}
+              >
+                {isLoading ? 'Verifying...' : 'Verify & Continue'}
+              </Button>
+              <button onClick={() => setStep(1)} className="w-full text-center text-gray-500 text-sm font-medium hover:text-blue-600">
+                Change Phone Number
+              </button>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="text-center animate-bounce">
+              <CheckCircle size={64} className="mx-auto text-green-500" />
+            </div>
+          )}
+        </Card>
+      </div>
+    );
+  };
+
+  const BrowseView = () => {
+    const [selectedCat, setSelectedCat] = useState('all');
+    
+    // Simulated worker data
+    const workers = [
+      { id: 1, name: 'Suresh Kumar', cat: 'electrician', rating: 4.8, exp: '12 yrs', loc: 'Malviya Nagar', available: true },
+      { id: 2, name: 'Lakhan Dev', cat: 'plumber', rating: 4.5, exp: '5 yrs', loc: 'Dwarka Sector 10', available: true },
+      { id: 3, name: 'Preeti Sharma', cat: 'domestic', rating: 4.9, exp: '8 yrs', loc: 'Greater Kailash', available: false },
+      { id: 4, name: 'Ravi Das', cat: 'construction', rating: 4.2, exp: '15 yrs', loc: 'Rohini', available: true },
+      { id: 5, name: 'Mohammed Ali', cat: 'technician', rating: 4.7, exp: '6 yrs', loc: 'Okhla', available: true },
+      { id: 6, name: 'Kishan Lal', cat: 'labour', rating: 4.3, exp: '3 yrs', loc: 'Noida Sec 62', available: true },
+    ];
+
+    const filteredWorkers = selectedCat === 'all' ? workers : workers.filter(w => w.cat === selectedCat);
+
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="mb-12">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">Find Professional Help</h2>
+          <div className="flex flex-wrap gap-3">
+            <button 
+              onClick={() => setSelectedCat('all')}
+              className={`px-5 py-2.5 rounded-full font-bold transition-all ${selectedCat === 'all' ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-white border border-gray-200 text-gray-600 hover:border-blue-600'}`}
+            >
+              All
+            </button>
+            {CATEGORIES.map(cat => (
+              <button 
+                key={cat.id}
+                onClick={() => setSelectedCat(cat.id)}
+                className={`px-5 py-2.5 rounded-full font-bold transition-all ${selectedCat === cat.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-white border border-gray-200 text-gray-600 hover:border-blue-600'}`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredWorkers.map(worker => (
+            <Card key={worker.id} className="p-6 overflow-hidden">
+              <div className="flex justify-between items-start mb-6">
+                <div className="flex gap-4">
+                  <div className="w-16 h-16 rounded-2xl bg-gray-100 overflow-hidden">
+                    <img src={`https://i.pravatar.cc/150?u=${worker.id + 50}`} alt={worker.name} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                      {worker.name}
+                      <ShieldCheck size={18} className="text-blue-500" />
+                    </h3>
+                    <p className="text-blue-600 font-bold text-sm uppercase tracking-wide">
+                      {CATEGORIES.find(c => c.id === worker.cat)?.name}
+                    </p>
+                  </div>
+                </div>
+                <div className="bg-blue-50 text-blue-700 px-3 py-1 rounded-lg text-sm font-bold flex items-center gap-1">
+                  <Star size={14} fill="currentColor" /> {worker.rating}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="bg-gray-50 p-3 rounded-xl">
+                  <p className="text-xs text-gray-500 font-medium uppercase mb-1">Experience</p>
+                  <p className="font-bold text-gray-900">{worker.exp}</p>
+                </div>
+                <div className="bg-gray-50 p-3 rounded-xl">
+                  <p className="text-xs text-gray-500 font-medium uppercase mb-1">Location</p>
+                  <p className="font-bold text-gray-900 truncate flex items-center gap-1">
+                    <MapPin size={14} className="text-gray-400" /> {worker.loc}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${worker.available ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`}></div>
+                  <span className="text-sm font-medium text-gray-500">{worker.available ? 'Available' : 'Busy'}</span>
+                </div>
+                <Button 
+                  onClick={() => setShowSubscriptionModal(true)}
+                  className="py-2 px-6 text-sm"
+                >
+                  Invite Worker
+                </Button>
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        {showSubscriptionModal && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <Card className="max-w-md w-full p-8 animate-in zoom-in duration-200">
+              <div className="text-center mb-8">
+                 <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                   <ShieldCheck size={32} />
+                 </div>
+                 <h3 className="text-2xl font-bold mb-2">Subscribe to Contact</h3>
+                 <p className="text-gray-600">To maintain safety and support our mission, direct contact with verified workers requires a subscription.</p>
+              </div>
+              <div className="bg-blue-50 border border-blue-100 p-6 rounded-2xl mb-8">
+                 <div className="flex justify-between items-center mb-2">
+                    <span className="font-bold text-gray-900">Annual Shield Plan</span>
+                    <span className="text-blue-600 font-bold">₹499/yr</span>
+                 </div>
+                 <p className="text-sm text-gray-600">Access unlimited workers for 12 months with priority dispute support.</p>
+              </div>
+              <div className="flex gap-4">
+                 <Button variant="ghost" className="flex-1" onClick={() => setShowSubscriptionModal(false)}>Cancel</Button>
+                 <Button className="flex-[2]" onClick={() => alert("Redirecting to payment gateway...")}>Subscribe Now</Button>
+              </div>
+            </Card>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const Footer = () => (
+    <footer className="bg-gray-900 text-white pt-24 pb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+          <div className="col-span-1 md:col-span-1">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white">
+                <TrendingUp size={24} />
+              </div>
+              <span className="text-2xl font-bold tracking-tight">
+                Sahayak<span className="text-blue-600">Setu</span>
+              </span>
+            </div>
+            <p className="text-gray-400 mb-6">
+              Bridging the gap between skill and opportunity through technology. Formalizing the informal for a better India.
+            </p>
+          </div>
+          
+          <div>
+            <h4 className="font-bold mb-6">Platform</h4>
+            <ul className="space-y-4 text-gray-400">
+              <li><button className="hover:text-blue-400">How it works</button></li>
+              <li><button className="hover:text-blue-400">Trust & Safety</button></li>
+              <li><button className="hover:text-blue-400">Categories</button></li>
+              <li><button className="hover:text-blue-400">Subscription</button></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-bold mb-6">Company</h4>
+            <ul className="space-y-4 text-gray-400">
+              <li><button className="hover:text-blue-400">Our Mission</button></li>
+              <li><button className="hover:text-blue-400">Social Impact</button></li>
+              <li><button className="hover:text-blue-400">Support Center</button></li>
+              <li><button className="hover:text-blue-400">Privacy Policy</button></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-bold mb-6">Connect</h4>
+            <div className="bg-gray-800 p-6 rounded-2xl">
+              <p className="text-sm text-gray-300 mb-4">We are here to help you get started or answer any questions.</p>
+              <Button className="w-full text-sm py-2">Contact Support</Button>
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
+          <p>© 2024 Sahayak Setu. All rights reserved.</p>
+          <div className="flex gap-8">
+            <button className="hover:text-white">Twitter</button>
+            <button className="hover:text-white">LinkedIn</button>
+            <button className="hover:text-white">Instagram</button>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+
+  // --- Router ---
+
+  return (
+    <div className="min-h-screen bg-white text-gray-900 font-sans selection:bg-blue-100 selection:text-blue-900">
+      {!role && <RoleSelectionModal />}
+      
+      <Navbar />
+
+      <main>
+        {view === 'home' && (
+          <>
+            <Hero />
+            <StepSection />
+            <CategoriesGrid />
+            <TrustSection />
+            <SubscriptionSection />
+          </>
+        )}
+        {view === 'login' && <LoginView />}
+        {view === 'browse' && <BrowseView />}
+      </main>
+
+      <Footer />
+      
+      {/* Role Switcher (Small UI for development/demo convenience) */}
+      <div className="fixed bottom-4 right-4 z-[100] bg-white shadow-2xl rounded-full border border-gray-100 p-1 flex items-center gap-1">
+         <button 
+          onClick={() => handleRoleSelection('worker')}
+          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${role === 'worker' ? 'bg-teal-500 text-white' : 'text-gray-500'}`}
+         >
+           Worker
+         </button>
+         <button 
+          onClick={() => handleRoleSelection('user')}
+          className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${role === 'user' ? 'bg-blue-600 text-white' : 'text-gray-500'}`}
+         >
+           User
+         </button>
+      </div>
+    </div>
+  );
+}
